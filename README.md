@@ -1,7 +1,7 @@
 # Centralized Desktop App
 
 <p align="center">
-<img src="src/assets/icons/decentralized-network-100.svg" />
+<img src="src/assets/images/telex-new.svg" />
 </p>
 
 >Install and run from source:
