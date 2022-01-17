@@ -49,6 +49,8 @@ import AddContact from '../components/AddContact';
 import LogOut from '../components/LogOut';
 import EmojiList from '../components/EmojiList';
 
+
+
 const bgColors = [
     '#a695e7',
     '#7bc862',
@@ -66,7 +68,181 @@ const defaultPicBgColor = bgColors[Math.floor(Math.random() * 8)];  // `hsl(${Ma
 const getRandomBgColor = () => bgColors[Math.floor(Math.random() * 8)];
 
 function Home(props) {
+    const history = useHistory();
 
+    const { user: { credentials }, data, data: { chats, onlineUsers } } = props;
+
+    const [initials, setInitials] = useState('');
+
+    useEffect(() => {
+        if (credentials)
+            !credentials.photoURL && setInitials(getInitials(credentials.displayName));
+    }, [credentials])
+
+    const [searchIconClicked, setSearchIconClicked] = useState(false);
+    const [settingsIconClicked, setSettingsIconClicked] = useState(false);
+    const [profileIconClicked, setProfileIconClicked] = useState(false);
+    const [addContactClicked, setAddContactClicked] = useState(false);
+    const [logOutClicked, setLogOutClicked] = useState(false);
+
+    const [searchValue, setSearchValue] = useState('');
+
+    const [selectedChatId, setSelectedChatId] = useState(undefined);
+
+    const handleChatBoxClick = (chat) => {
+        if (chat) {
+            if (chat.id !== selectedChatId) {
+                setSelectedChatId(chat.id);
+                if (!data[chat.id]) props.getChatMessages(chat.id, chat.shared_key);
+                handleReadMessages(chat.id);
+            }
+        }
+        else {
+            setSelectedChatId('Cloud');
+        }
+
+        textAreaRef.current?.focus();
+    }
+
+    const handleClosingAnimation = (callback, durationInMS) => { const timeOut = setTimeout(() => { callback(); clearTimeout(timeOut); }, durationInMS) };
+
+    const flScreenBgRef = useRef(null);
+    const profileRef = useRef(null);
+    const settingsRef = useRef(null);
+
+    const popUpRef = createRef();
+
+    const resizerLeftRef = useRef(null);
+    const resizerRightRef = useRef(null);
+
+    const handleMouseMoveL = (e) => {
+        if (e.clientX >= 225 && e.clientX < document.body.clientWidth * 0.6) {
+            resizerLeftRef.current.parentElement.style.minWidth = e.clientX + 'px';
+            resizerLeftRef.current.parentElement.style.maxWidth = e.clientX + 'px';
+
+        }
+    }
+
+    const handleMouseMoveR = (e) => {
+        const size = document.body.clientWidth - e.clientX;
+        if (size >= 225 && size <= 300) {
+            resizerRightRef.current.parentElement.style.minWidth = size + 'px';
+            resizerRightRef.current.parentElement.style.maxWidth = size + 'px';
+        }
+    }
+
+    const handleMouseUpL = () => {
+        document.body.style.cursor = 'default';
+        document.removeEventListener('mousemove', handleMouseMoveL);
+        document.removeEventListener('mouseup', handleMouseUpL);
+    }
+
+    const handleMouseUpR = () => {
+        document.body.style.cursor = 'default';
+        document.removeEventListener('mousemove', handleMouseMoveR);
+        document.removeEventListener('mouseup', handleMouseUpR);
+    }
+
+    const handlePhotoChange = (e) => e.currentTarget.files && props.uploadProfilePhoto(e.currentTarget.files.item(0));
+    const handleFileChange = (e) => {
+        if (e.currentTarget.files) {
+            const data = chats.find(chat => chat.id === selectedChatId);
+            props.uploadFiles(Array.from(e.currentTarget.files), selectedChatId, data.lastMessageInfo, data.nonSeenMessages);
+        }
+    };
+
+    const handleProfileIconClick = () => setProfileIconClicked(true);
+
+    const photoInputRef = useRef(null);
+    const handlePhotoInputClick = () => photoInputRef.current.click();
+
+    const fileInputRef = useRef(null);
+    const handleFileInputClick = () => fileInputRef.current.click();
+
+    const profileSettingsDetailsRef = useRef(null);
+    const profileSettingsEditRef = useRef(null);
+
+    const profileFNameRef = useRef(null);
+    const profileLNameRef = useRef(null);
+
+    const handleProfileSettingsAnimClosing = () => {
+        profileSettingsEditRef.current.style.transform = 'translateX(100%)';
+        handleClosingAnimation(() => {
+            profileSettingsEditRef.current.style.display = 'none';
+            profileSettingsDetailsRef.current.style.display = 'block';
+            handleClosingAnimation(() => {
+                profileSettingsDetailsRef.current.style.transform = 'translateX(0)';
+            }, 100);
+        }, 300);
+    }
+
+    // const getChatUserID = (userIDs) => userIDs.filter(each => each != credentials.uid)[0];
+
+    // * Temp Approach
+    const [userBgColorList, setUserBgColorList] = useState('');
+
+    const textAreaRef = useRef(null);
+    const [key, setKey] = useState(null);
+
+    const lastMessageRef = useRef(null);
+    const handleMessageSubmit = () => {
+        // TODO: fix Cloud chat
+        if (textAreaRef.current.value.trim() !== '' && selectedChatId !== 'Cloud') {
+            const data = chats.find(chat => chat.id === selectedChatId);
+            props.sendMessageOrFile({
+                id: selectedChatId,
+                message: textAreaRef.current.value,
+                lastMessageInfo: data.lastMessageInfo,
+                nonSeenMessages: data.nonSeenMessages,
+                sharedKey: data.shared_key
+            });
+        }
+        textAreaRef.current.value = '';
+        textAreaRef.current.focus();
+    }
+
+    const [isFocused, setIsFocused] = useState(true);
+
+    const onFocus = () => {
+        setIsFocused(true);
+        props.setUserStatus(true);
+    }
+
+    const handleReadMessages = (_selectedChatId) => {
+        if (_selectedChatId && _selectedChatId !== 'Cloud')
+            props.readMessages(_selectedChatId);
+    }
+
+    const handleDownloadFile = (url, name, id, index) => props.downloadFile(url, name, id, index);
+
+    const openFile = (path) => bridge.fileApi.openFile(path);
+
+    const onBlur = () => {
+        console.log(2)
+        setIsFocused(false);
+        props.setUserStatus(false);
+    }
+
+    useEffect(() => {
+        if (lastMessageRef.current) lastMessageRef.current?.scrollIntoView();
+    }, [lastMessageRef.current])
+
+    useEffect(() => {
+        console.log(222);
+        console.log(isFocused);
+        if (isFocused) handleReadMessages(selectedChatId);
+    }, [chats])
+
+    useEffect(() => {
+        if (isFocused) {
+            textAreaRef.current?.focus();
+            handleReadMessages(selectedChatId);
+        }
+    }, [isFocused])
+
+    useEffect(() => {
+        bridge.windowApi.setListener(onFocus, onBlur);
+    }, [])
 
     return (
         credentials &&
@@ -434,7 +610,6 @@ function Home(props) {
         </div>
     )
 }
-
 
 const mapStateToProps = (state) => ({
     user: state.user,
