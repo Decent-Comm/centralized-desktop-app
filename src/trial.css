@@ -1,0 +1,24 @@
+.flex {
+    display: flex;
+    margin-top: 5em;
+    gap: 1rem;
+    flex-flow: wrap;
+    background-color: green;
+}
+
+.flex > * {
+    background-color: lightcoral;
+    flex: 1 1 max(150px, 30%);
+}
+
+.grid {
+    display: grid;
+    margin-top: 5em;
+    gap: 1rem;
+    background-color: green;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.grid > * {
+    background-color: lightcoral;
+}
