@@ -1,7 +1,7 @@
 # Centralized Desktop App
 
 <p align="center">
-<img src="src/assets/images/telex-new.svg" />
+<img src="src/assets/images/telex-new.ico" />
 </p>
 
 >Install and run from source:
