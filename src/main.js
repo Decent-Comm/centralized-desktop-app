@@ -53,6 +53,8 @@ const createWindow = (event, launchInfo) => {
     minHeight: 600,
     icon: path.join(__dirname, 'assets/images/telex-new.ico'), // './src/Assets/Images/icon.ico',
     backgroundColor: '#fff',
+    center: true,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
       worldSafeExecuteJavaScript: true,
@@ -63,7 +65,7 @@ const createWindow = (event, launchInfo) => {
   });
 
   // * To Remove Menu Bar
-  mainWindow.removeMenu();
+  // mainWindow.removeMenu();
 
   // mainWindow.setProgressBar(0.5, { mode: 'normal' })
 
